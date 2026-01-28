@@ -2,3 +2,4 @@ postgres-data
 .envgit init
 .idea
 .DS_Store
+.env
