@@ -1,29 +1,35 @@
 package main
 
 import (
-	config2 "api/internal/config"
-	"api/internal/models"
+	"api/internal/config"
+	"database/sql"
 	"fmt"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
+	"log"
 )
 
 func main() {
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		panic(err.Error())
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal(err)
 	}
 
-	c := config2.NewConfig()
+	c := config.New()
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", c.DbConfig.Host, c.DbConfig.Username, c.DbConfig.Password, c.DbConfig.Db, c.DbConfig.Port)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s  sslmode=disable",
+		c.DbConfig.Host, c.DbConfig.Port, c.DbConfig.Username, c.DbConfig.Password, c.DbConfig.Db,
+	)
 
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	goose.SetDialect("postgres")
+
+	if err := goose.Up(db, "migrations"); err != nil {
 		panic(err)
 	}
-
-	db.AutoMigrate(&models.Car{})
 }

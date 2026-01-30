@@ -9,9 +9,8 @@ type Config struct {
 	DbConfig DbConfig
 }
 
-func NewConfig() *Config {
+func New() *Config {
 	err := godotenv.Load()
-
 	if err != nil {
 		panic(err)
 	}

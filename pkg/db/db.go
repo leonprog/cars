@@ -2,24 +2,17 @@ package db
 
 import (
 	"api/internal/config"
+	"context"
 	"fmt"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/jackc/pgx/v5"
 )
 
-type Db struct {
-	Db gorm.DB
-}
-
-func NewDb(c *config.Config) *Db {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", c.DbConfig.Host, c.DbConfig.Username, c.DbConfig.Password, c.DbConfig.Db, c.DbConfig.Port)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
+func New(ctx context.Context, c *config.Config) *pgx.Conn {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", c.DbConfig.Username, c.DbConfig.Password, c.DbConfig.Host, c.DbConfig.Port, c.DbConfig.Db)
+	conn, err := pgx.Connect(ctx, dsn)
 	if err != nil {
 		panic(err)
 	}
 
-	return &Db{
-		Db: *db,
-	}
+	return conn
 }

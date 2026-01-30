@@ -2,12 +2,10 @@ package models
 
 import (
 	"gorm.io/datatypes"
-	"gorm.io/gorm"
 )
 
 type Car struct {
-	gorm.Model
-
+	Id         int            `json:"id"`
 	Mark       string         `json:"mark" `
 	ModelCar   string         `json:"model"`
 	OwnerCount int            `json:"owner_count"`
