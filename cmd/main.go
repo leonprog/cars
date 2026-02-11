@@ -19,7 +19,7 @@ func main() {
 	defer newDb.Close(ctx)
 
 	// Repositories
-	carRepository := repository.New(ctx, newDb)
+	carRepository := repository.New(newDb)
 
 	// Services
 	carService := service.New(carRepository)

@@ -3,19 +3,27 @@ package handler
 import (
 	"api/internal/dto"
 	"api/internal/handler/request"
-	_interface "api/internal/interface"
+	"api/internal/models"
 	"api/pkg/res"
+	"context"
 	"encoding/json"
 	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strconv"
 )
 
-type CarHandler struct {
-	service _interface.Service
+type Service interface {
+	GetCars(ctx context.Context) ([]models.Car, error)
+	FindCarById(ctx context.Context, id int) (models.Car, error)
+	CreateCar(ctx context.Context, createCarDto dto.CarCreateDto) (int, error)
+	Delete(ctx context.Context, id int) error
 }
 
-func New(router *http.ServeMux, service _interface.Service) {
+type CarHandler struct {
+	service Service
+}
+
+func New(router *http.ServeMux, service Service) {
 	handler := &CarHandler{
 		service: service,
 	}
@@ -27,9 +35,10 @@ func New(router *http.ServeMux, service _interface.Service) {
 }
 
 func (h *CarHandler) GetCars(w http.ResponseWriter, r *http.Request) {
-	cars, err := h.service.GetCars()
+	cars, err := h.service.GetCars(r.Context())
 	if err != nil {
 		res.JsonError(w, err.Error(), http.StatusBadRequest)
+
 		return
 	}
 
@@ -46,7 +55,7 @@ func (h *CarHandler) FindCarsById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	car, err := h.service.FindCarById(id)
+	car, err := h.service.FindCarById(r.Context(), id)
 	if err != nil {
 		res.JsonError(w, err.Error(), http.StatusBadRequest)
 
@@ -84,7 +93,7 @@ func (h *CarHandler) AddCar(w http.ResponseWriter, r *http.Request) {
 		Options:    carPayload.Options,
 	}
 
-	result, err := h.service.CreateCar(carCreateDto)
+	result, err := h.service.CreateCar(r.Context(), carCreateDto)
 	if err != nil {
 		res.JsonError(w, err.Error(), http.StatusBadRequest)
 
@@ -104,7 +113,7 @@ func (h *CarHandler) DeleteCar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.Delete(id)
+	err = h.service.Delete(r.Context(), id)
 	if err != nil {
 		res.JsonError(w, err.Error(), http.StatusBadRequest)
 
